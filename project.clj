@@ -1,4 +1,4 @@
-(defproject clj-kstream-elasticsearch-sink "0.1.0-SNAPSHOT"
+(defproject clj-kstream-elasticsearch-sink "0.1.0"
   :description "A Clojure tool designed to read from a kafka topic and index the\nitems into elasticsearch"
   :url "git@github.com:sojoner/clj-kstream-elasticsearch-sink.git"
   :license {:name "Eclipse Public License"
