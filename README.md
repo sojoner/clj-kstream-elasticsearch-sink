@@ -19,29 +19,30 @@ items into elasticsearch
 The topic you are consuming needs to have **^String** Keys and **^String** .json values.  
 
 ## Build Clojure
-    
+
     $lein check
 
 ## Build .jar
 
+    $export LEIN_SNAPSHOTS_IN_RELEASE=true
     $lein uberjar
 
 ## Build .container
-    
+
     $cd deploy
     $./containerize.sh
 
 ## Usage Leiningen
 
-    $lein run --broker kafka-broker:9092 --topic mapped-test-json --elasticsearch http://elasticsearch:9200 --index 2017-hpc-test --index-type hpc-test
+    $lein run --broker kafka-broker:9092 --zookeeper zookeeper:2181 --topic mapped-test-json --elasticsearch http://elasticsearch:9200 --index 2017-hpc-test --index-type hpc-test
 
 ## Usage java
 
-    $java - jar clj-kstream-elasticsearch-sink-0.1.0-SNAPSHOT-standalone.jar --broker kafka-broker:9092 --topic mapped-test-json --elasticsearch http://elasticsearch:9200 --index 2017-hpc-test --index-type hpc-test
+    $java -jar clj-kstream-elasticsearch-sink.jar --broker kafka-broker:9092 --zookeeper zookeeper:2181 --topic mapped-test-json --elasticsearch http://elasticsearch:9200 --index 2017-hpc-test --index-type hpc-test
 
 ## Usage docker
 
-    $docker run -t -i <BUILD-HASH> --broker kafka-broker:9092 --topic mapped-test-json --elasticsearch http://elasticsearch:9200 --index 2017-hpc-test --index-type hpc-test
+    $docker run -t -i <BUILD-HASH> --broker kafka-broker:9092 --zookeeper zookeeper:2181 --topic mapped-test-json --elasticsearch http://elasticsearch:9200 --index 2017-hpc-test --index-type hpc-test
 
 
 ## License

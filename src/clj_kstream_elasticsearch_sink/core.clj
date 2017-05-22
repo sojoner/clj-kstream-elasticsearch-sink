@@ -5,7 +5,9 @@
             [clojure.core.async :refer [<!! >!! <! >! close! chan go-loop]]
             [clj-kstream-elasticsearch-sink.cli :as cli-def]
             [clj-kstream-elasticsearch-sink.from-kafka :as from-kafka]
-            [clj-kstream-elasticsearch-sink.to-elasticsearch :as to-es])
+            [clj-kstream-elasticsearch-sink.to-elasticsearch :as to-es]
+            [franzy.admin.zookeeper.client :as client]
+            [franzy.admin.topics :refer :all])
   (:gen-class))
 
 ;; State
@@ -29,25 +31,32 @@
     (Runtime/getRuntime)
     (stop-strange-loop)))
 
+
 (defn bootstrap []
   (swap! state assoc
          :from_kafa (chan)
          :consumer (from-kafka/create-consumer @state)
          :es_connection (to-es/create-es-connection (:elasticsearch @state)))
+  (with-open [zk-utils (client/make-zk-utils {:servers (:zookeeper @state)} false)]
+    (when-not (topic-exists? zk-utils (:topic @state))
+      (create-topic! zk-utils (:topic @state) 1)))
   (swap! state assoc :consumer_sentinal (from-kafka/start-consuming @state))
   (swap! state assoc :es_sentinal (to-es/start-indexing @state)))
+
+
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-def/cli-options)]
     (cond
       (:help options) (cli-def/exit 0 (cli-def/usage summary))
-      (not= (count (keys options)) 5) (cli-def/exit 1 (cli-def/usage summary))
+      (not= (count (keys options)) 6) (cli-def/exit 1 (cli-def/usage summary))
       errors (cli-def/exit 1 (cli-def/error-msg errors)))
     (swap! state assoc
            :es_type (:index-type options)
            :es_index (:index options)
            :elasticsearch (:elasticsearch options)
            :broker (:broker options)
+           :zookeeper (:zookeeper options)
            :topic (:topic options)
            :consumer-group-id "clj-kstream-elasticsearch-sink"
            :consumer_sentinal (chan)
